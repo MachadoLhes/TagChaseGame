@@ -1,11 +1,13 @@
 extends KinematicBody2D
 
-const ACCEL = 850
-const MAX_SPEED = 85
+const ACCEL = 1000
+const MAX_SPEED = 120
 const FRICTION = 0.25
-const AIR_RESIST = 0.02
-const GRAVITY = 250
-const JUMP_FORCE = 128
+const WALL_FRICTION = 0.1
+const WALL_REPULSE = 250
+const AIR_RESIST = 0.01
+const GRAVITY = 280
+const JUMP_FORCE = 160
 
 var motion = Vector2.ZERO
 var double_jump = 0
@@ -32,6 +34,7 @@ func _physics_process(delta):
 			motion.x = lerp(motion.x, 0, FRICTION)
 		if Input.is_action_just_pressed("ui_up"):
 			motion.y = -JUMP_FORCE 
+	
 	else:
 		animation_player.play("Jump")
 		if Input.is_action_just_released("ui_up") and motion.y < -JUMP_FORCE/2:
@@ -42,5 +45,14 @@ func _physics_process(delta):
 			
 		if x_input == 0:
 			motion.x = lerp(motion.x, 0, AIR_RESIST)
+			
+	if is_on_wall():
+		motion.y = lerp(motion.y, 0, WALL_FRICTION)
+		if Input.is_action_just_pressed("ui_up"):
+			if x_input < 0:
+				motion.x += WALL_REPULSE
+			else:
+				motion.x -= WALL_REPULSE
+			motion.y = -JUMP_FORCE
 	
 	motion = move_and_slide(motion, Vector2.UP)
